@@ -25,13 +25,32 @@ install_dependencies() {
     echo ""
     echo "Installing dependencies"
     echo ""
-    sudo apt install adb fastboot dos2unix unzip ed curl -y
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$NAME
+    else
+        echo "Unsupported OS"
+        exit 1
+    fi
+    case $OS in
+        "Ubuntu" | "Linux Mint")
+            sudo apt update
+            sudo apt install adb fastboot dos2unix unzip ed curl -y
+            ;;
+        "Fedora")
+            sudo dnf install android-tools dos2unix unzip ed curl -y
+            ;;
+        "Arch Linux" | "Manjaro Linux")
+            sudo pacman -S android-tools dos2unix unzip ed curl --noconfirm
+            ;;
+        *)
+            echo "Unsupported OS: $OS"
+            exit 1
+            ;;
+    esac
     PATH=$PATH:/usr/lib/android-sdk/platform-tools/fastboot
     PATH=$PATH:/usr/lib/android-sdk/platform-tools/adb
-
-    # Check 
     programs=("adb" "fastboot" "dos2unix" "unzip" "curl" "ed")
-
     for program in "${programs[@]}"; do
         if sudo which "$program" >/dev/null 2>&1; then
             echo "$program is installed"
